@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' file: data:">
+  <title>MySyncCalendar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="calendar-header">
+      <button id="btn-prev" class="nav-btn" title="上个月">&lt;</button>
+      <h1 id="month-year" class="clickable" title="点击选择年月">----/--</h1>
+      <button id="btn-next" class="nav-btn" title="下个月">&gt;</button>
+      <span id="day-diff" class="day-diff"></span>
+      <span class="header-spacer"></span>
+      <button id="btn-add-event" class="today-btn" title="添加事项">＋</button>
+      <button id="btn-wallpaper" class="settings-btn" title="壁纸设置">🖼</button>
+      <button id="btn-back-today" class="today-btn" title="回到今天">回到今日</button>
+    </header>
+
+    <div id="event-overlay" class="hidden">
+      <div id="event-modal">
+        <h2 id="event-modal-title">添加事项</h2>
+        <div id="event-form">
+          <label class="form-label">
+            标题
+            <input id="event-title" class="form-input" type="text" placeholder="事项名称" maxlength="20">
+          </label>
+          <div class="form-label">类型</div>
+          <div class="form-radio-group">
+            <label class="radio-label">
+              <input type="radio" name="event-type" id="event-type-annual" value="annual" checked> 年度事项（每年重复）
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="event-type" id="event-type-one-time" value="one-time"> 单次事项
+            </label>
+          </div>
+          <div id="event-date-row" class="form-row">
+            <select id="event-date-year" class="form-select"></select>
+            <select id="event-date-month" class="form-select"></select>
+            <select id="event-date-day" class="form-select"></select>
+          </div>
+          <div class="form-row">
+            <label class="form-label" style="flex:1">
+              提醒时间（可选）
+              <input id="event-reminder" class="form-input" type="time">
+            </label>
+          </div>
+          <label class="form-label">
+            备注（可选）
+            <input id="event-notes" class="form-input" type="text" placeholder="备注信息" maxlength="50">
+          </label>
+          <label id="event-memorial-row" class="form-label checkbox-label hidden">
+            <input id="event-memorial" type="checkbox"> 标记为纪念
+          </label>
+          <div class="form-buttons">
+            <button id="btn-event-cancel" class="form-btn form-btn-cancel">取消</button>
+            <button id="btn-event-save" class="form-btn form-btn-save">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="wallpaper-overlay" class="hidden">
+      <div id="wallpaper-menu">
+        <h2>壁纸设置</h2>
+        <div id="wallpaper-actions">
+          <button id="wp-import" class="wp-menu-btn">📂 导入图片</button>
+          <button id="wp-manage" class="wp-menu-btn">🖼 管理壁纸</button>
+          <label class="wp-toggle">
+            <input id="wp-random" type="checkbox"> 随机壁纸模式
+          </label>
+        </div>
+        <div id="wp-manage-panel" class="hidden">
+          <div id="wp-grid"></div>
+          <button id="wp-back" class="form-btn form-btn-cancel">返回</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="picker-overlay" class="hidden">
+      <div id="month-picker">
+        <div id="picker-year-row">
+          <button id="picker-year-prev" class="picker-nav-btn" title="上一年">&lt;</button>
+          <span id="picker-year-label"></span>
+          <button id="picker-year-next" class="picker-nav-btn" title="下一年">&gt;</button>
+        </div>
+        <div id="picker-month-grid"></div>
+      </div>
+    </div>
+
+    <div id="calendar-container">
+      <div id="day-headers"></div>
+      <div id="calendar-grid"></div>
+    </div>
+
+    <div id="event-list-panel">
+      <div id="event-list-title"></div>
+      <div id="event-list-items"></div>
+    </div>
+
+    <div id="event-view" class="hidden">
+      <div id="event-view-tabs">
+        <button id="tab-before" class="view-tab active">今日之前（含今日）</button>
+        <button id="tab-after" class="view-tab">今日之后（含今日）</button>
+      </div>
+      <div id="event-view-list"></div>
+    </div>
+
+    <div id="view-switcher">
+      <button id="switch-calendar" class="switch-btn active">月历</button>
+      <button id="switch-events" class="switch-btn">事件</button>
+    </div>
+
+    <footer id="status-bar"></footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

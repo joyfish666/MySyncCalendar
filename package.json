@@ -1,0 +1,47 @@
+{
+  "name": "my-sync-calendar",
+  "version": "1.0.0",
+  "description": "一个完全私有、跨平台同步的个人日历工具",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "node scripts/start.js",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable",
+    "cap:init": "npx cap init MySyncCalendar com.example.mysynccalendar"
+  },
+  "author": "",
+  "license": "MIT",
+  "build": {
+    "appId": "com.mysynccalendar.app",
+    "productName": "MySyncCalendar",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "scripts/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false
+    },
+    "portable": {
+      "artifactName": "MySyncCalendar-${version}-portable.exe",
+      "requestExecutionLevel": "user"
+    }
+  },
+  "devDependencies": {
+    "electron": "^41.0.2",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/filesystem": "^7.0.0"
+  }
+}
