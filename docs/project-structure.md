@@ -22,8 +22,8 @@ MySyncCalendar/
 ├── scripts/                    # 启动脚本
 │   └── start.js                # 清除 ELECTRON_RUN_AS_NODE 后启动 Electron
 ├── electron/                   # Electron 专属文件
-│   ├── main.js                 # 主进程：窗口、IPC、原子写入、冲突清理、壁纸管理、Resource目录
-│   └── preload.js              # 预加载脚本：contextBridge 暴露 calendarAPI（含壁纸）
+│   ├── main.js                 # 主进程：窗口、IPC、原子写入、冲突清理、壁纸管理、生理期数据
+│   └── preload.js              # 预加载脚本：contextBridge 暴露 calendarAPI（壁纸/生理期）
 ├── capacitor.config.json       # Capacitor 配置（Phase 2 创建）
 └── android/                    # Android 原生项目（Phase 2 生成）
 ```
@@ -40,4 +40,4 @@ MySyncCalendar/
 | **CalendarEngine** | `generateGrid(year, month, todayISO)` → cell 描述符数组，含事件匹配 |
 | **Renderer** | 全部 DOM 操作：表头、选择器、事项弹窗、壁纸菜单、网格重建、选中切换、天数差、事件列表、事件视图、壁纸应用 |
 | **Controller** | 事件处理：日期点击、选择器交互、事项 CRUD、置顶、月份导航、视图切换、筛选切换、键盘绑定 |
-| **DataManager** | 异步文件 I/O，通过 `window.calendarAPI` 读写 JSON（事项数据）、冲突清理 |
+| **DataManager** | 异步文件 I/O，通过 `window.calendarAPI` 读写 JSON（事项/生理期数据）、冲突清理 |

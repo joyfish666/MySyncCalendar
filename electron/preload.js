@@ -12,4 +12,6 @@ contextBridge.exposeInMainWorld('calendarAPI', {
   getWallpaperDir: () => ipcRenderer.invoke('get-wallpaper-dir'),
   saveWallpaperSettings: (settings) => ipcRenderer.invoke('save-wallpaper-settings', settings),
   loadWallpaperSettings: () => ipcRenderer.invoke('load-wallpaper-settings'),
+  savePeriodData: (data) => ipcRenderer.invoke('save-period-data', data),
+  loadPeriodData: () => ipcRenderer.invoke('load-period-data'),
 });

@@ -121,15 +121,15 @@ body {
 /* === HOLIDAY / WORKDAY BADGES === */
 .holiday-badge {
   position: absolute; top: 2px; right: 2px;
-  font-size: 0.5rem; line-height: 1; font-weight: 600;
-  padding: 1px 2px; border-radius: 2px;
+  font-size: 0.75rem; line-height: 1; font-weight: 600;
+  padding: 1px 3px; border-radius: 2px;
   pointer-events: none;
 }
 .rest-badge { background: #e8f5e9; color: #2e7d32; }
 .work-badge { background: #fce4ec; color: #c62828; }
 
 /* === EVENT MARKERS === */
-.event-marker { position: absolute; width: 8px; height: 8px; border-radius: 50%; }
+.event-marker { position: absolute; width: 12px; height: 12px; border-radius: 50%; }
 .event-marker-annual { bottom: 5px; left: 6px; background: #e65100; }
 .event-marker-one-time { bottom: 5px; right: 6px; background: #2e7d32; }
 
@@ -165,6 +165,22 @@ body {
 .day-cell:hover { background-color: #e8e8e8; }
 .day-cell.weekend, .day-cell.holiday { color: #1976d2; }
 .day-cell.dimmed { color: #bbb; }
+
+/* === PERIOD HEART BUTTON === */
+.period-btn {
+  width: 32px; height: 32px; border: 1px solid #e57373; border-radius: 6px;
+  background: #fff; font-size: 0.95rem; cursor: pointer; color: #e57373;
+  transition: background-color 0.15s, color 0.15s;
+}
+.period-btn:hover { background: #ffebee; color: #c62828; }
+
+/* === PERIOD HEART MARKERS === */
+.period-heart {
+  position: absolute; top: 1px; left: 3px;
+  font-size: 0.85rem; line-height: 1; pointer-events: none;
+}
+.period-heart-red { color: #e53935; }
+.period-heart-gray { color: #bdbdbd; }
 .day-cell.today { border-color: #4a90d9; background-color: #e3f2fd; font-weight: 600; }
 .day-cell.selected {
   background-color: #1565c0; color: #fff; font-weight: 700;

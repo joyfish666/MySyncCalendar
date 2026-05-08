@@ -103,6 +103,9 @@ const state = {
   randomWallpaper: false,
   wallpapers: [],
   holidayData: { holidays: {}, workdays: {} },
+  periodDays: [],
+  predictedDate: null,
+  periodViewActive: false,
 };
 
 /* ================================================================
@@ -211,6 +214,8 @@ const CalendarEngine = {
         dayIndex,
         hasAnnual: !!annualEvent,
         hasOneTime: !!oneTimeEvent,
+        isPeriod: state.periodDays.includes(dateISO),
+        isPredicted: dateISO === state.predictedDate && !state.periodDays.includes(dateISO),
       });
     }
     return grid;
@@ -263,6 +268,18 @@ const Renderer = {
         lunarSpan.className = 'lunar-text';
         lunarSpan.textContent = cell.lunarText;
         div.appendChild(lunarSpan);
+      }
+
+      if (cell.isPeriod) {
+        const heart = document.createElement('span');
+        heart.className = 'period-heart period-heart-red';
+        heart.textContent = '♥';
+        div.appendChild(heart);
+      } else if (cell.isPredicted) {
+        const heart = document.createElement('span');
+        heart.className = 'period-heart period-heart-gray';
+        heart.textContent = '♥';
+        div.appendChild(heart);
       }
 
       if (cell.isHoliday) {
@@ -611,6 +628,87 @@ const Renderer = {
     });
   },
 
+  renderPeriodView() {
+    const listEl = document.getElementById('event-view-list');
+    listEl.innerHTML = '';
+    const today = DateUtils.getTodayISO();
+    const filter = state.eventFilter;
+
+    if (filter === 'before') {
+      const past = [...state.periodDays].filter(d => d <= today).sort().reverse().slice(0, 8);
+      if (past.length === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'event-list-empty';
+        empty.style.cssText = 'padding:20px;text-align:center;';
+        empty.textContent = '无历史记录';
+        listEl.appendChild(empty);
+        return;
+      }
+      past.forEach(dateISO => {
+        const row = document.createElement('div');
+        row.className = 'ev-row';
+        const heart = document.createElement('span');
+        heart.className = 'period-heart period-heart-red';
+        heart.style.cssText = 'position:static;font-size:0.85rem;';
+        heart.textContent = '♥';
+        row.appendChild(heart);
+        const label = document.createElement('span');
+        label.className = 'event-list-name';
+        label.textContent = dateISO;
+        row.appendChild(label);
+        const diff = DateUtils.getDayDiff(dateISO);
+        const diffSpan = document.createElement('span');
+        diffSpan.className = 'event-list-time';
+        const ad = Math.abs(diff);
+        diffSpan.textContent = diff < 0 ? `${ad}天前` : '今天';
+        row.appendChild(diffSpan);
+
+        const spacer = document.createElement('span');
+        spacer.style.cssText = 'flex:1';
+        row.appendChild(spacer);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'icon-btn danger';
+        delBtn.textContent = '🗑';
+        delBtn.title = '删除';
+        delBtn.addEventListener('click', () => Controller.onDeletePeriodDay(dateISO));
+        row.appendChild(delBtn);
+
+        listEl.appendChild(row);
+      });
+    } else {
+      const future = state.predictedDate && state.predictedDate >= today && !state.periodDays.includes(state.predictedDate)
+        ? [state.predictedDate] : [];
+      if (future.length === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'event-list-empty';
+        empty.style.cssText = 'padding:20px;text-align:center;';
+        empty.textContent = '暂无预测';
+        listEl.appendChild(empty);
+        return;
+      }
+      future.forEach(dateISO => {
+        const row = document.createElement('div');
+        row.className = 'ev-row';
+        const heart = document.createElement('span');
+        heart.className = 'period-heart period-heart-gray';
+        heart.style.cssText = 'position:static;font-size:0.85rem;';
+        heart.textContent = '♥';
+        row.appendChild(heart);
+        const label = document.createElement('span');
+        label.className = 'event-list-name';
+        label.textContent = dateISO + ' (预测)';
+        row.appendChild(label);
+        const diff = DateUtils.getDayDiff(dateISO);
+        const diffSpan = document.createElement('span');
+        diffSpan.className = 'event-list-time';
+        diffSpan.textContent = diff > 0 ? `${diff}天后` : '今天';
+        row.appendChild(diffSpan);
+        listEl.appendChild(row);
+      });
+    }
+  },
+
   renderDayDiff(dateISO) {
     const diffEl = document.getElementById('day-diff');
     const backBtn = document.getElementById('btn-back-today');
@@ -819,9 +917,11 @@ const Controller = {
   onSwitchView(mode) {
     Renderer.switchView(mode);
     if (mode === 'events') {
+      state.periodViewActive = false;
       document.getElementById('month-year').textContent = '事件列表';
       Renderer.renderEventView();
     } else {
+      state.periodViewActive = false;
       Renderer.renderHeader(state.viewYear, state.viewMonth);
       this._rerenderGrid();
     }
@@ -831,7 +931,11 @@ const Controller = {
     state.eventFilter = filter;
     document.getElementById('tab-before').classList.toggle('active', filter === 'before');
     document.getElementById('tab-after').classList.toggle('active', filter === 'after');
-    Renderer.renderEventView();
+    if (state.periodViewActive) {
+      Renderer.renderPeriodView();
+    } else {
+      Renderer.renderEventView();
+    }
   },
 
   // --- Wallpaper ---
@@ -891,6 +995,72 @@ const Controller = {
     });
   },
 
+  // --- Period day ---
+
+  async onDeletePeriodDay(dateISO) {
+    state.periodDays = state.periodDays.filter(d => d !== dateISO);
+    state.predictedDate = this._predictPeriod();
+    await DataManager.savePeriodData();
+    Renderer.renderPeriodView();
+    if (state.viewMode === 'calendar') this._rerenderGrid();
+  },
+
+  async onTogglePeriodDay() {
+    if (state.viewMode === 'events') {
+      state.periodViewActive = !state.periodViewActive;
+      if (state.periodViewActive) {
+        Renderer.renderPeriodView();
+      } else {
+        Renderer.renderEventView();
+      }
+      return;
+    }
+
+    const dateISO = state.selectedDate;
+    const idx = state.periodDays.indexOf(dateISO);
+    if (dateISO === state.predictedDate && idx === -1) {
+      state.periodDays.push(dateISO);
+      state.periodDays.sort();
+    } else if (idx !== -1) {
+      state.periodDays.splice(idx, 1);
+    } else {
+      state.periodDays.push(dateISO);
+      state.periodDays.sort();
+    }
+    state.predictedDate = this._predictPeriod();
+    await DataManager.savePeriodData();
+    this._rerenderGrid();
+  },
+
+  _predictPeriod() {
+    const days = [...state.periodDays].sort();
+    if (days.length < 2) return null;
+
+    const cycles = [];
+    let start = days[0];
+    for (let i = 1; i < days.length; i++) {
+      const gap = Math.round((new Date(days[i]) - new Date(start)) / 86400000);
+      if (gap >= 18) { cycles.push(gap); start = days[i]; }
+    }
+    if (cycles.length < 1) return null;
+
+    const overallAvg = cycles.reduce((a, b) => a + b, 0) / cycles.length;
+    if (cycles.length === 1) {
+      const d = new Date(days[days.length - 1]); d.setDate(d.getDate() + Math.round(overallAvg));
+      return d.toISOString().slice(0, 10);
+    }
+
+    const recent = cycles.slice(-3);
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const recentVar = recent.reduce((s, c) => s + (c - recentAvg) ** 2, 0) / recent.length;
+    const overallVar = cycles.reduce((s, c) => s + (c - overallAvg) ** 2, 0) / cycles.length;
+    const weight = Math.sqrt(overallVar) / (Math.sqrt(recentVar) + Math.sqrt(overallVar) + 0.01);
+    const predicted = weight * recentAvg + (1 - weight) * overallAvg;
+
+    const d = new Date(days[days.length - 1]); d.setDate(d.getDate() + Math.round(predicted));
+    return d.toISOString().slice(0, 10);
+  },
+
   onGoToday() {
     const [y, m] = state.todayDate.split('-').map(Number);
     state.viewYear = y; state.viewMonth = m; state.selectedDate = state.todayDate;
@@ -908,6 +1078,8 @@ const Controller = {
   _refreshAll() {
     if (state.viewMode === 'calendar') {
       this._rerenderGrid();
+    } else if (state.periodViewActive) {
+      Renderer.renderPeriodView();
     } else {
       Renderer.renderEventView();
     }
@@ -917,6 +1089,7 @@ const Controller = {
     document.getElementById('btn-prev').addEventListener('click', () => this.onPrevMonth());
     document.getElementById('btn-next').addEventListener('click', () => this.onNextMonth());
     document.getElementById('btn-back-today').addEventListener('click', () => this.onGoToday());
+    document.getElementById('btn-period').addEventListener('click', () => this.onTogglePeriodDay());
     document.getElementById('btn-add-event').addEventListener('click', () => this.onAddEventClick());
     document.getElementById('btn-event-save').addEventListener('click', () => this.onEventSave());
     document.getElementById('btn-event-cancel').addEventListener('click', () => Renderer.closeEventModal());
@@ -980,9 +1153,25 @@ const DataManager = {
   async resolveConflicts() {
     if (window.calendarAPI) await window.calendarAPI.resolveConflicts();
   },
+  async savePeriodData() {
+    if (window.calendarAPI) await window.calendarAPI.savePeriodData({
+      periodDays: state.periodDays,
+      predictedDate: state.predictedDate,
+    });
+  },
+  async loadPeriodData() {
+    if (window.calendarAPI) {
+      const data = await window.calendarAPI.loadPeriodData();
+      if (data) {
+        state.periodDays = data.periodDays || [];
+        state.predictedDate = data.predictedDate || null;
+      }
+    }
+  },
   async init() {
     await this.resolveConflicts();
     await this.loadEvents();
+    await this.loadPeriodData();
   },
 };
 
@@ -1009,11 +1198,8 @@ function initApp() {
   Controller.bindEvents();
 
   DataManager.init().then(() => {
-    if (state.events.length) {
-      const gridData = CalendarEngine.generateGrid(y, m, state.todayDate);
-      Renderer.renderGrid(gridData);
-      Renderer.renderEventList(state.selectedDate);
-    }
+    state.predictedDate = Controller._predictPeriod();
+    Controller._rerenderGrid();
   });
 
   if (window.calendarAPI) {

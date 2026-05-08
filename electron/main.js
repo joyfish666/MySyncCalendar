@@ -7,6 +7,7 @@ const RESOURCE_DIR = path.join(app.getPath('userData'), 'Resource');
 const EVENTS_FILE = 'calendar-events.json';
 const WALLPAPER_DIR = path.join(RESOURCE_DIR, 'wallpapers');
 const SETTINGS_FILE = path.join(RESOURCE_DIR, 'wallpaper-settings.json');
+const PERIOD_FILE = path.join(RESOURCE_DIR, 'period-data.json');
 
 function getEventsPath() {
   return path.join(RESOURCE_DIR, EVENTS_FILE);
@@ -151,6 +152,17 @@ ipcMain.handle('save-wallpaper-settings', async (_event, settings) => {
 ipcMain.handle('load-wallpaper-settings', async () => {
   try {
     const data = await fs.readFile(SETTINGS_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch (_) { return null; }
+});
+
+ipcMain.handle('save-period-data', async (_event, data) => {
+  await fs.writeFile(PERIOD_FILE, JSON.stringify(data, null, 2), 'utf-8');
+});
+
+ipcMain.handle('load-period-data', async () => {
+  try {
+    const data = await fs.readFile(PERIOD_FILE, 'utf-8');
     return JSON.parse(data);
   } catch (_) { return null; }
 });
