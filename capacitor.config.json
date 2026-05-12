@@ -1,0 +1,9 @@
+{
+  "appId": "com.mysynccalendar.app",
+  "appName": "MySyncCalendar",
+  "webDir": "src",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "http"
+  }
+}

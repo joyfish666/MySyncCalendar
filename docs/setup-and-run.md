@@ -83,6 +83,27 @@ ELECTRON_MIRROR=https://mirrors.huaweicloud.com/electron/ npm run build
 - `signAndEditExecutable: false` 跳过代码签名
 - `artifactName` 自定义输出文件名
 - `requestExecutionLevel: user` 避免管理员权限要求
+
+### 构建 Android APK
+
+```bash
+npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
+| 文件 | 说明 |
+|------|------|
+| `android/app/build/outputs/apk/debug/app-debug.apk` | Debug APK (~4 MB) |
+
+**环境要求**：JDK 17+、Android SDK (API 35)、Gradle 8.11。Gradle 镜像已配置为阿里云，分布式 URL 使用腾讯云。
+
+> **注意**：Android APK 已成功构建，但由于未进行 UI 尺寸适配，在手机上界面可能存在布局偏差。具体功能尚未在真机上逐一调试。
+
+**已知问题**：`@capacitor/android` 和 `@capacitor/filesystem` 插件默认要求 JDK 21。如使用 JDK 17，需将以下文件中的 `VERSION_21` / `jvmToolchain(21)` 改为 `17`：
+- `node_modules/@capacitor/android/capacitor/build.gradle`
+- `node_modules/@capacitor/filesystem/android/build.gradle`
+- `node_modules/@capacitor/cli/dist/android/update.js`
+
 - 每个日期格显示公历数字及农历或节日信息（节假日→节日名称，初一→月份名，其余→日称）
 - 底部状态栏显示数据目录路径 `%APPDATA%/MySyncCalendar/Resource`
 - 事件、壁纸、设置等所有用户数据统一存储在 `Resource/` 目录中

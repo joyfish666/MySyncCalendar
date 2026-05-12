@@ -25,7 +25,12 @@
     ],
     "win": {
       "target": [
-        { "target": "portable", "arch": ["x64"] }
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false
@@ -40,6 +45,7 @@
     "electron-builder": "^26.8.1"
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.3",
     "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0",
     "@capacitor/filesystem": "^7.0.0"
